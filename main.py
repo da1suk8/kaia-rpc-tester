@@ -3,7 +3,7 @@ import json
 import argparse
 import types
 from functools import wraps
-from HtmlTestRunner import HTMLTestRunner
+# from HtmlTestRunner import HTMLTestRunner
 from utils import Utils
 from common import personal as personal_common
 from common import kaia as kaia_common
@@ -842,12 +842,15 @@ if __name__ == "__main__":
     protocol = parse_arguments()
 
     initialize()
-    runner = HTMLTestRunner(
-        output="testReport",
-        report_title="KaiaTestReport",
-        report_name="KaiaTestReport",
-        combine_reports=True,
-    )
+    # runner = HTMLTestRunner(
+    #     output="testReport",
+    #     report_title="KaiaTestReport",
+    #     report_name="KaiaTestReport",
+    #     combine_reports=True,
+    #     add_timestamp=False,
+    #     open_in_browser=False
+    # )
+    runner = unittest.TextTestRunner(verbosity=2)
 
     suites = list()
     if protocol == "rpc":
