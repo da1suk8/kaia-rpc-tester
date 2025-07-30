@@ -22,15 +22,10 @@ jobs:
         git checkout dev
         git pull origin dev
     
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Install system dependencies
+    - name: Install system dependencies and Python 3.10
       run: |
         sudo apt update
-        sudo apt install -y python3-venv build-essential git
+        sudo apt install -y python3.10 python3.10-venv build-essential git
     
     - name: Install Go
       uses: actions/setup-go@v4
@@ -54,8 +49,9 @@ jobs:
     - name: Install Python dependencies
       run: |
         cd kaia-rpc-tester
-        python3 -m venv venv
+        python3.10 -m venv venv
         source venv/bin/activate
+        pip3 install --upgrade pip
         pip3 install -r requirements.txt
     
     - name: Run RPC tests
