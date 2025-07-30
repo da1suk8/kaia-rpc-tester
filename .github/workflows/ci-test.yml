@@ -1,0 +1,66 @@
+name: CI Test
+
+on:
+  pull_request:
+    branches:
+      - ci-test
+
+jobs:
+  test-rpc:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout kaia-rpc-tester
+      uses: actions/checkout@v4
+      with:
+        path: kaia-rpc-tester
+    
+    - name: Clone kaia-dev
+      run: |
+        git clone https://github.com/kaiachain/kaia.git kaia-dev
+        cd kaia-dev
+        git checkout dev
+        git pull origin dev
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-venv build-essential git
+    
+    - name: Install Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.7'
+    
+    - name: Build kaia-dev
+      run: |
+        cd kaia-dev
+        make kcn
+    
+    - name: Setup kaia-rpc-tester
+      run: |
+        cd kaia-rpc-tester
+        cp ../kaia-dev/build/bin/kcn script/cn/bin/
+        cd script
+        ./set_CNonly.sh
+        cd ..
+        cp config_template.json config.json
+    
+    - name: Install Python dependencies
+      run: |
+        cd kaia-rpc-tester
+        python3 -m venv venv
+        source venv/bin/activate
+        pip3 install -r requirements.txt
+    
+    - name: Run RPC tests
+      run: |
+        cd kaia-rpc-tester
+        source venv/bin/activate
+        python main.py
+      timeout-minutes: 30 
