@@ -4,6 +4,22 @@ import argparse
 import types
 from functools import wraps
 from HtmlTestRunner import HTMLTestRunner
+"""
+Compatibility shim for HtmlTestRunner on some Python versions/environments.
+HtmlTestRunner's HtmlTestResult may miss `_count_relevant_tb_levels`, which
+`unittest.TestResult` provides. When absent, add a delegating implementation
+to prevent AttributeError during traceback formatting.
+"""
+try:
+    from HtmlTestRunner import result as _html_result  # type: ignore
+    if not hasattr(_html_result.HtmlTestResult, "_count_relevant_tb_levels"):
+        def _count_relevant_tb_levels(self, tb):  # type: ignore
+            return unittest.TestResult._count_relevant_tb_levels(self, tb)  # type: ignore[attr-defined]
+
+        _html_result.HtmlTestResult._count_relevant_tb_levels = _count_relevant_tb_levels  # type: ignore
+except Exception:
+    # Best-effort shim; ignore if HtmlTestRunner isn't importable here
+    pass
 from utils import Utils
 from common import personal as personal_common
 from common import kaia as kaia_common
