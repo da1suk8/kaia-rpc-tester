@@ -14,7 +14,17 @@ try:
     from HtmlTestRunner import result as _html_result  # type: ignore
     if not hasattr(_html_result.HtmlTestResult, "_count_relevant_tb_levels"):
         def _count_relevant_tb_levels(self, tb):  # type: ignore
-            return unittest.TestResult._count_relevant_tb_levels(self, tb)  # type: ignore[attr-defined]
+            # Mirror unittest.case.TestCase logic using HtmlTestRunner's own
+            # `_is_relevant_tb_level` to count non-harness traceback levels.
+            length = 0
+            # Skip frames that are part of the testing framework
+            while tb and getattr(self, "_is_relevant_tb_level", lambda *_: False)(tb):
+                tb = tb.tb_next
+            # Count the remaining frames
+            while tb:
+                length += 1
+                tb = tb.tb_next
+            return length
 
         _html_result.HtmlTestResult._count_relevant_tb_levels = _count_relevant_tb_levels  # type: ignore
 except Exception:
