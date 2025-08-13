@@ -134,6 +134,45 @@ class Utils(unittest.TestCase):
         return data
 
     @staticmethod
+    def parse_conf_value(key: str, conf_path: str = "") -> str:
+        """Read a value for the given key from kcnd.conf.
+        Falls back to the default test path if conf_path is not provided.
+        Returns an empty string if the key/path is not found.
+        """
+        try:
+            path = (
+                conf_path
+                if conf_path
+                else f"{PROJECT_ROOT_DIR}/script/cn/conf/kcnd.conf"
+            )
+            text = pathlib.Path(path).read_text()
+            m = re.search(rf'^{key}="?([^"\n#]+)"?', text, flags=re.M)
+            return "" if not m else m.group(1).strip()
+        except Exception:
+            return ""
+
+    @staticmethod
+    def snapshot_runtime_apis(endpoint: str, log_path: str, rpc_port: int = 8551, ws_port: int = 8552) -> str:
+        """Fetch current runtime modules from the node via rpc_modules.
+        Tries HTTP first, then WebSocket. Returns CSV string of module names or empty string on failure.
+        """
+        # Try HTTP RPC first
+        try:
+            res, err = Utils.call_rpc(endpoint, "rpc_modules", [], log_path, port=rpc_port)
+            if err is None and isinstance(res, dict) and len(res) > 0:
+                return ",".join(sorted(res.keys()))
+        except Exception:
+            pass
+        # Fallback to WS
+        try:
+            res, err = Utils.call_ws(endpoint, "rpc_modules", [], log_path, port=ws_port)
+            if err is None and isinstance(res, dict) and len(res) > 0:
+                return ",".join(sorted(res.keys()))
+        except Exception:
+            pass
+        return ""
+
+    @staticmethod
     def call_rpc(endpoint, method, params, log_file, save_result=False, port=8551):
         if endpoint is None or endpoint == "":
             endpoint = Utils.get_config().get("endpoint")

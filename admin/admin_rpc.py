@@ -17,6 +17,7 @@ class TestAdminNamespaceRPC(unittest.TestCase):
     ns = "admin"
     waiting_count = 2
     current_dt = None
+    runtime_apis_csv = None
 
     def test_admin_addPeer_error_no_param(self):
         method = f"{self.ns}_addPeer"
@@ -176,17 +177,30 @@ class TestAdminNamespaceRPC(unittest.TestCase):
         self.assertIsNone(error)
 
     def create_params_for_starting_rpc(self):
-        host = "0.0.0.0"
+        host = Utils.parse_conf_value("RPC_ADDR") or "0.0.0.0"
         port = int(self.rpc_port)
-        cors = "*"
-        apis = "admin,eth,kaia,net,personal,debug,web3,txpool,auction"
+        cors = Utils.parse_conf_value("RPC_CORSDOMAIN") or "*"
+        # Cached snapshot if already taken
+        if TestAdminNamespaceRPC.runtime_apis_csv:
+            apis = TestAdminNamespaceRPC.runtime_apis_csv
+        else:
+            apis = Utils.snapshot_runtime_apis(self.endpoint, self.log_path, int(self.rpc_port), int(self.ws_port))
+            if not apis:
+                apis = Utils.parse_conf_value("RPC_API")
+            TestAdminNamespaceRPC.runtime_apis_csv = apis
         return [host, port, cors, apis]
 
     def create_params_for_starting_ws(self):
-        host = "0.0.0.0"
+        host = Utils.parse_conf_value("WS_ADDR") or "0.0.0.0"
         port = int(self.ws_port)
-        cors = "*"
-        apis = "admin,eth,kaia,net,personal,debug,web3,txpool,auction"
+        cors = Utils.parse_conf_value("WS_ORIGINS") or "*"
+        if TestAdminNamespaceRPC.runtime_apis_csv:
+            apis = TestAdminNamespaceRPC.runtime_apis_csv
+        else:
+            apis = Utils.snapshot_runtime_apis(self.endpoint, self.log_path, int(self.rpc_port), int(self.ws_port))
+            if not apis:
+                apis = Utils.parse_conf_value("WS_API")
+            TestAdminNamespaceRPC.runtime_apis_csv = apis
         return [host, port, cors, apis]
 
     def test_admin_startRPC_error_wrong_type_param1_using_ws(self):
