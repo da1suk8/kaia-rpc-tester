@@ -4,32 +4,10 @@ import argparse
 import types
 from functools import wraps
 from HtmlTestRunner import HTMLTestRunner
-"""
-Compatibility shim for HtmlTestRunner on some Python versions/environments.
-HtmlTestRunner's HtmlTestResult may miss `_count_relevant_tb_levels`, which
-`unittest.TestResult` provides. When absent, add a delegating implementation
-to prevent AttributeError during traceback formatting.
-"""
-try:
-    from HtmlTestRunner import result as _html_result  # type: ignore
-    if not hasattr(_html_result.HtmlTestResult, "_count_relevant_tb_levels"):
-        def _count_relevant_tb_levels(self, tb):  # type: ignore
-            # Mirror unittest.case.TestCase logic using HtmlTestRunner's own
-            # `_is_relevant_tb_level` to count non-harness traceback levels.
-            length = 0
-            # Skip frames that are part of the testing framework
-            while tb and getattr(self, "_is_relevant_tb_level", lambda *_: False)(tb):
-                tb = tb.tb_next
-            # Count the remaining frames
-            while tb:
-                length += 1
-                tb = tb.tb_next
-            return length
-
-        _html_result.HtmlTestResult._count_relevant_tb_levels = _count_relevant_tb_levels  # type: ignore
-except Exception:
-    # Best-effort shim; ignore if HtmlTestRunner isn't importable here
-    pass
+# Fix for HtmlTestRunner compatibility
+import HtmlTestRunner.result as R
+if not hasattr(R.HtmlTestResult, "_count_relevant_tb_levels"):
+    R.HtmlTestResult._count_relevant_tb_levels = lambda self, tb: None
 from utils import Utils
 from common import personal as personal_common
 from common import kaia as kaia_common
