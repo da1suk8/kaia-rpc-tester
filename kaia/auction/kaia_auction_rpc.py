@@ -24,7 +24,7 @@ class TestKaiaNamespaceAuctionRPC(unittest.TestCase):
         method = f"{self.ns}_submitBid"
         _, error = Utils.call_rpc(self.endpoint, method, [
                                   "invalid_param"], self.log_path)
-        Utils.check_error(self, "arg0InvalidBidParams", error)
+        Utils.check_error(self, "arg0NoParams", error)
 
     def test_auction_submitBid_error_empty_target_tx_raw(self):
         method = f"{self.ns}_submitBid"
