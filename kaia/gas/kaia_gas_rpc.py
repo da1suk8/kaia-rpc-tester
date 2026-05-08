@@ -31,11 +31,12 @@ class TestKaiaNamespaceGasRPC(unittest.TestCase):
         length = len(result["reward"])
         self.assertLessEqual(length, blockCount)
         self.assertEqual(length, len(result["gasUsedRatio"]))
+        self.assertEqual(length, len(result["blobGasUsedRatio"]))
         self.assertEqual(length + 1, len(result["baseFeePerGas"]))
-        self.assertEqual(length + 1, len(result["blobBaseFeePerGas"]))
+        self.assertEqual(length + 1, len(result["baseFeePerBlobGas"]))
         for i in range(len(result["baseFeePerGas"])):
             baseFee = int(result["baseFeePerGas"][i], 16)
-            blobBaseFee = int(result["blobBaseFeePerGas"][i], 16)
+            blobBaseFee = int(result["baseFeePerBlobGas"][i], 16)
             expectedBlobBaseFee = baseFee * BLOB_BASE_FEE_MULTIPLIER
             self.assertEqual(blobBaseFee, expectedBlobBaseFee)
 
@@ -46,11 +47,12 @@ class TestKaiaNamespaceGasRPC(unittest.TestCase):
         length = len(result2["reward"])
         self.assertLessEqual(length, blockCount)
         self.assertEqual(length, len(result2["gasUsedRatio"]))
+        self.assertEqual(length, len(result2["blobGasUsedRatio"]))
         self.assertEqual(length + 1, len(result2["baseFeePerGas"]))
-        self.assertEqual(length + 1, len(result2["blobBaseFeePerGas"]))
+        self.assertEqual(length + 1, len(result2["baseFeePerBlobGas"]))
         for i in range(len(result2["baseFeePerGas"])):
             baseFee = int(result2["baseFeePerGas"][i], 16)
-            blobBaseFee = int(result2["blobBaseFeePerGas"][i], 16)
+            blobBaseFee = int(result2["baseFeePerBlobGas"][i], 16)
             expectedBlobBaseFee = baseFee * BLOB_BASE_FEE_MULTIPLIER
             self.assertEqual(blobBaseFee, expectedBlobBaseFee)
 
